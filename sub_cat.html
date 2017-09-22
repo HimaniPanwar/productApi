@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>API</title>
+	<meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" >
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" >
+  <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" ></script>
+</head>
+<body>
+
+    <p id="label">Sub Categories:</p>
+    <p id="result"></p>
+
+    <script type="text/javascript">
+      $(document).ready(function(){
+        var url= 'https://flourishstock.herokuapp.com/stocks/getSubCategory';
+        $.ajax({
+          type: 'POST',
+          url: url,
+          // send the id from localstorage to API.
+          data: {id: localStorage.getItem('main_cat')},
+          success: function(wb){
+	          console.log(wb);
+            for(i in wb.allsubcat){
+              $subcat = wb.allsubcat[i];
+              $("#result").append('<div class="sub_item" id='+$subcat.id+'>'+$subcat.name+'</div>');
+            }
+          }
+        });
+  
+        $(document).on("click", ".sub_item", function(e){
+          var id = $(this).attr('id');
+          // store ID of sub category in storage
+          localStorage.setItem('sub_cat',id);
+          window.location.href = "product.html";
+        });
+     	});
+    </script>
+</body>
+<!--33539694184-->
+</html> 
+
