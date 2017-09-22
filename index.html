@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>API</title>
+	<meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" >
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" >
+    <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" ></script>
+</head>
+<body>
+  
+   <p id="label">Main Categories:</p>
+   <p id="result"></p>
+   <p id="label1">Sub Categories:</p>
+   <p id="result1"></p>
+   <p id="label2">Products:</p>
+   <p id="result2"></p>
+   <p id="label3">Inventory:</p>
+   <p id="result3">
+      <button class="btn btn-info" id="btn1">Sale</button><br><br>
+      <button class="btn btn-info" id="btn2">Return stock</button><br><br>
+      <button class="btn btn-info" id="btn3">Get Stock</button><br><br>
+      <button class="btn btn-warning" id="btn7">Logs</button>
+   </p>
+   
+   <p id="result4">
+     <input type="text" id="textInput" placeholder="Enter here">
+     <button id="submit" class="btn btn-success">Submit</button>
+     <button class="btn btn-success" id="btn4">Back</button>
+      <p id="display"></p>
+   </p>
+   <p id="result5">
+     <input type="text" id="textInput1" placeholder="Enter here">
+     <button id="submit1" class="btn btn-success">Submit</button>
+     <button class="btn btn-success" id="btn5">Back</button>
+     <p id="display1"></p>
+   </p>
+    <p id="result6">
+     <input type="text" id="textInput2" placeholder="Enter here">
+     <button id="submit2" class="btn btn-success">Submit</button>
+     <button class="btn btn-success" id="btn6">Back</button>
+     <p id="display2"></p>
+   </p>
+   <p id="result8"></p><br><br><br>
+   <script type="text/javascript">
+     $(document).ready(function(){
+       $('#label1,#label2,#result1,#result2,#result3,#label3,#result4,#result5,#result6,#result8').hide();
+     	$.getJSON('https://flourishstock.herokuapp.com/stocks/getMainCategory',
+        function(wb){
+          for(i in wb.allcat){
+            var maincat = wb.allcat[i];
+            console.log(maincat);
+            $("#result").append('<div class="main_item" id='+maincat.id+'>'+ maincat.name + '</div>');
+
+          } 
+        }
+      );
+      
+      $(document).on("click", ".main_item", function(e){
+        var id = $(this).attr('id');
+
+        // store ID of main category in storage
+        localStorage.setItem('main_cat',id);
+
+        $("#result1").html('');
+        $('#result,#label,#result3,#label3,#result4,#result5,#result6,#result8').hide();
+        $('#result1,#label1').show();
+        var url= 'https://flourishstock.herokuapp.com/stocks/getSubCategory';
+        $.ajax({
+          type: 'POST',
+          url: url,
+          // send the id from localstorage to API.
+          data: {id: localStorage.getItem('main_cat')},
+          success: 
+            function(wb){
+  	          console.log(wb);
+              for(i in wb.allsubcat){
+                $subcat = wb.allsubcat[i];
+                $("#result1").append('<div class="sub_item" id='+$subcat.id+'>'+$subcat.name+'</div>');
+              }
+            }
+          });
+      }); 
+  
+      $(document).on("click", ".sub_item", function(e){
+        var id = $(this).attr('id');
+
+        $("#result2").html('');
+        $('#result,#label,#result1,#label1,#result3,#label3,#result4,#result5,#result6,#result8').hide(); 
+        $('#result2,#label2').show();
+       
+        var url= 'https://flourishstock.herokuapp.com/stocks/getProducts';
+        $.ajax({
+          type: 'POST',
+          url: url,
+          data: {id: id},
+          success: 
+            function(wb){
+              console.log(wb);
+              for(i in wb.allproducts){
+                $prod = wb.allproducts[i];
+                $("#result2").append('<div class="product" id='+$prod.id+'>'+$prod.name+'</div>');
+              }
+            }
+          });
+      });
+      $(document).on("click", ".product", function(e){
+        var id = $(this).attr('id');
+       
+        $("#result2").html('');
+        $('#result,#label,#result1,#label1,#result2,#label2,#result4,#result5,#result6,#result8').hide(); 
+        $('#result3,#label3').show();
+           $('#btn1').click(function(){
+
+                $('#result3,#label3,#btn4,#display').hide();
+                $('#textInput,#submit,#result4').show();
+                $('#textInput').val('');
+                $('#submit').click(function(){
+                  $('#btn4,#display').show();
+                  $('#submit,#textInput').hide();
+                var url= 'https://flourishstock.herokuapp.com/stocks/sale';
+                $.ajax({
+                   type: 'POST',
+                   url: url,
+                   data: {id: id,quantity: $('#textInput').val()},
+                   success: 
+                       function(wb){
+                           console.log(wb);
+                           $('#display').text(wb.message);
+                       }
+            
+                });
+                $('#btn4').click(function(){
+                    $('#result3,#label3').show();
+                    $('#display,#result4').hide();
+                });
+              });
+          });
+          $('#btn2').click(function(){
+
+                $('#result3,#label3,#btn5,#display1').hide();
+                $('#textInput1,#submit1,#result5').show();
+                $('#textInput1').val('');
+                $('#submit1').click(function(){
+                  $('#btn5,#display1').show();
+                  $('#submit1,#textInput1').hide();
+                var url= 'https://flourishstock.herokuapp.com/stocks/returnstock';
+                $.ajax({
+                   type: 'POST',
+                   url: url,
+                   data: {id: id,quantity: $('#textInput1').val()},
+                   success: 
+                       function(wb){
+                           console.log(wb);
+                           $('#display1').text(wb.message);
+                       }
+            
+                });
+                $('#btn5').click(function(){
+                    $('#result3,#label3').show();
+                    $('#display1,#result5').hide();
+                });
+              });
+          });
+          $('#btn3').click(function(){
+
+                $('#result3,#label3,#btn6,#display2').hide();
+                $('#textInput1,#submit1,#result6').show();
+                $('#textInput2').val('');
+                $('#submit2').click(function(){
+                  $('#btn6,#display2').show();
+                  $('#submit2,#textInput2').hide();
+                var url= 'https://flourishstock.herokuapp.com/stocks/getstock';
+                $.ajax({
+                   type: 'POST',
+                   url: url,
+                   data: {id: id,quantity: $('#textInput2').val()},
+                   success: 
+                       function(wb){
+                           console.log(wb);
+                           $('#display2').text(wb.message);
+                       }
+            
+                });
+                $('#btn6').click(function(){
+                    $('#result3,#label3').show();
+                    $('#display2,#result6').hide();
+                });
+              });
+          });
+          $('#btn7').click(function(){
+                $('#result3,#label3,#btn6').hide();
+                $('#result8').show();
+                $.getJSON('https://flourishstock.herokuapp.com/stocks/logs',
+                function(wb){
+               for(i in wb.recentlog){
+                  var maincat = wb.recentlog[i];
+                  console.log(maincat);
+                 $("#result8").append('<div class=logs>'+ maincat.type + ' ' + maincat.product + '  ' + maincat.quantity+ '</div>');
+
+              } 
+             }
+             );
+                
+          });
+        });   
+   	});
+   </script>
+</body>
+<!--33539694184-->
+</html> 
+
